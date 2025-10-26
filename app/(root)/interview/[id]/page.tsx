@@ -15,6 +15,9 @@ const page = async ({params}: RouteParams) => {
 
   if(!interview) redirect("/");
 
+  console.log("Interview data:", interview);
+  console.log("Interview questions:", interview.questions);
+
   return (
     <>
         <div className="flex flex-row gap-4 justify-between">

@@ -73,62 +73,29 @@ const Agent = ({ userName, userId, type, interviewId, feedbackId, questions }: A
       // Extract interview details from the conversation
       const conversation = messages.map(msg => `${msg.role}: ${msg.content}`).join('\n');
       
-      // Use AI to extract interview details from the conversation
-      const { generateText } = await import('ai');
-      const { google } = await import('@ai-sdk/google');
-      
-      const { text: extractedDetails } = await generateText({
-        model: google('gemini-2.0-flash-001'),
-        prompt: `Extract interview details from this conversation and return as JSON:
-        
-        Conversation:
-        ${conversation}
-        
-        Extract the following information:
-        - role: The job role mentioned (e.g., "Frontend Developer", "Software Engineer")
-        - type: The interview type mentioned (e.g., "Technical", "Behavioral", "Mixed")
-        - level: The experience level mentioned (e.g., "Junior", "Mid", "Senior")
-        - techstack: The technologies mentioned (comma-separated, e.g., "React, JavaScript, HTML, CSS")
-        - amount: Number of questions requested (default to 5 if not specified)
-        
-        Return only valid JSON in this format:
-        {
-          "role": "extracted role or default",
-          "type": "extracted type or Technical",
-          "level": "extracted level or Junior", 
-          "techstack": "extracted techstack or React, JavaScript, HTML, CSS",
-          "amount": extracted amount or 5
-        }`
-      });
-
-      const interviewDetails = JSON.parse(extractedDetails);
-      console.log("Extracted interview details:", interviewDetails);
-      
-      // Call the generation API
-      const response = await fetch('/api/vapi/generate', {
+      // Call the new API endpoint that handles extraction and generation on the server
+      const response = await fetch('/api/vapi/extract-and-generate', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          type: interviewDetails.type,
-          role: interviewDetails.role,
-          level: interviewDetails.level,
-          techstack: interviewDetails.techstack,
-          amount: interviewDetails.amount,
+          conversation: conversation,
           userid: userId
         })
       });
 
       const result = await response.json();
+      console.log("API response:", result);
 
       if(result.success){
-          console.log("Interview generated successfully");
+          console.log("Interview generated successfully:", result.interview);
           alert("Interview generated successfully! Redirecting to home page.");
           router.push("/");
       } else {
           console.error("Error generating interview:", result.error);
-          alert("Failed to generate interview. Please try again.");
+          const errorMessage = result.error || "Unknown error occurred";
+          alert(`Failed to generate interview: ${errorMessage}. Please try again.`);
           router.push("/");
       }
     } catch (error) {
@@ -198,22 +165,24 @@ const Agent = ({ userName, userId, type, interviewId, feedbackId, questions }: A
 
   const handleCall = async () => {
     console.log("Starting call - type:", type, "userId:", userId, "interviewId:", interviewId);
+    console.log("Questions received:", questions);
     setCallStatus(CallStatus.CONNECTING);
 
     if (type === "generate") {
-      console.log("Starting generate call with workflow ID:", process.env.NEXT_PUBLIC_VAPI_WORKFLOW_ID);
-      await vapi.start(
-        undefined,
-        undefined,
-        undefined,
-        process.env.NEXT_PUBLIC_VAPI_WORKFLOW_ID!,
-        {
-          variableValues: {
-            username: userName,
-            userid: userId,
-          },
-        }
-      );
+      console.log("Starting generate call - using interviewer assistant for question collection");
+      // Use the interviewer assistant but with a different prompt for generation
+      await vapi.start(interviewer, {
+        variableValues: {
+          questions: `Please help me collect information to generate interview questions. Ask the user about:
+1. What job role they want to practice for (e.g., Frontend Developer, Software Engineer)
+2. What type of interview they prefer (Technical, Behavioral, or Mixed)
+3. What experience level (Junior, Mid, or Senior)
+4. What technologies/tech stack they want to focus on
+5. How many questions they want (1-20)
+
+Be conversational and friendly. Once you have all the information, thank them and end the call.`,
+        },
+      });
     } else {
       let formattedQuestions = "";
       if (questions) {
@@ -222,6 +191,9 @@ const Agent = ({ userName, userId, type, interviewId, feedbackId, questions }: A
           .join("\n");
       }
       console.log("Starting interview call with questions:", formattedQuestions);
+      console.log("Number of questions:", questions?.length || 0);
+      console.log("Raw questions array:", questions);
+      
       await vapi.start(interviewer, {
         variableValues: {
           questions: formattedQuestions,

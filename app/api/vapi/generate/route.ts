@@ -28,16 +28,23 @@ export async function POST(request: Request) {
 
         });
 
+        console.log("Generated questions text:", questions);
+
+        const parsedQuestions = JSON.parse(questions);
+        console.log("Parsed questions:", parsedQuestions);
+        console.log("Number of questions:", parsedQuestions.length);
+
         const interview = {
             role, type, level,
             techstack: techstack.split(","),
-            questions: JSON.parse(questions),
+            questions: parsedQuestions,
             userId: userid,
             finalized: true,
             coverImage: getRandomInterviewCover(),
             createdAt: new Date().toISOString(),
         }
 
+        console.log("Interview object to save:", interview);
         await db.collection("interviews").add(interview);
 
         return Response.json({ success: true }, {status: 200})
