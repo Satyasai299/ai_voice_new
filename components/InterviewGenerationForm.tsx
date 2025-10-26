@@ -39,7 +39,7 @@ const InterviewGenerationForm = ({ userId }: InterviewGenerationFormProps) => {
 
       const result = await response.json()
 
-      if(result.success){
+      if (result.success) {
         alert("Interview generated successfully! Redirecting to home page.")
         router.push("/")
       } else {
@@ -61,10 +61,10 @@ const InterviewGenerationForm = ({ userId }: InterviewGenerationFormProps) => {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-4 mb-5">
       <div>
-        <Label htmlFor="role">Job Role</Label>
-        <Input
+        <Label htmlFor="role" className=' text-indigo-200 pb-2'>Job Role</Label>
+        <Input  className='text-indigo-200'
           id="role"
           name="role"
           type="text"
@@ -76,38 +76,38 @@ const InterviewGenerationForm = ({ userId }: InterviewGenerationFormProps) => {
       </div>
 
       <div>
-        <Label htmlFor="type">Interview Type</Label>
+        <Label htmlFor="type" className=' text-indigo-200 pb-2'>Interview Type</Label>
         <select
           id="type"
           name="type"
           value={formData.type}
           onChange={handleChange}
-          className="w-full p-2 border border-gray-300 rounded-md"
+          className="w-full p-2 border rounded-md  text-indigo-200"
         >
-          <option value="Technical">Technical</option>
-          <option value="Behavioral">Behavioral</option>
-          <option value="Mixed">Mixed</option>
+          <option value="Technical" className='bg-gray-700'>Technical</option>
+          <option value="Behavioral" className='bg-gray-700'>Behavioral</option>
+          <option value="Mixed" className='bg-gray-700'>Mixed</option>
         </select>
       </div>
 
       <div>
-        <Label htmlFor="level">Experience Level</Label>
-        <select
+        <Label htmlFor="level" className=' text-indigo-200 pb-2'>Experience Level</Label>
+        <select 
           id="level"
           name="level"
           value={formData.level}
           onChange={handleChange}
-          className="w-full p-2 border border-gray-300 rounded-md"
+          className="w-full p-2 border border-gray-700 rounded-md  text-indigo-200"
         >
-          <option value="Junior">Junior</option>
-          <option value="Mid">Mid</option>
-          <option value="Senior">Senior</option>
+          <option value="Junior" className='bg-gray-700' >Junior</option>
+          <option value="Mid"className='bg-gray-700'>Mid</option>
+          <option value="Senior"className='bg-gray-700'>Senior</option>
         </select>
       </div>
 
       <div>
-        <Label htmlFor="techstack">Tech Stack (comma-separated)</Label>
-        <Input
+        <Label htmlFor="techstack" className=' text-indigo-200 pb-2'>Tech Stack (comma-separated)</Label>
+        <Input className='text-indigo-200'
           id="techstack"
           name="techstack"
           type="text"
@@ -119,8 +119,8 @@ const InterviewGenerationForm = ({ userId }: InterviewGenerationFormProps) => {
       </div>
 
       <div>
-        <Label htmlFor="amount">Number of Questions</Label>
-        <Input
+        <Label htmlFor="amount" className=' text-indigo-200 pb-2'>Number of Questions</Label>
+        <Input className='text-indigo-200'
           id="amount"
           name="amount"
           type="number"
@@ -132,10 +132,10 @@ const InterviewGenerationForm = ({ userId }: InterviewGenerationFormProps) => {
         />
       </div>
 
-      <Button 
-        type="submit" 
+      <Button
+        type="submit"
         disabled={isGenerating}
-        className="w-full"
+        className="w-full  text-indigo-800"
       >
         {isGenerating ? "Generating Interview..." : "Generate Interview"}
       </Button>

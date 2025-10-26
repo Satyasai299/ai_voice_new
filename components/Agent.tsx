@@ -238,9 +238,9 @@ Be conversational and friendly. Once you have all the information, thank them an
             <div className="card-border">
                 <div className="card-content">
                     <Image 
-                        src="/user-avatar.png" 
+                        src="/user_avatar.jpg" 
                         alt="user avatar" 
-                        width={540} 
+                        width={590} 
                         height={540} 
                         className="rounded-full object-cover size-[120px] "
                     />
@@ -250,8 +250,8 @@ Be conversational and friendly. Once you have all the information, thank them an
         </div>
 
         {messages.length > 0 && (
-            <div className="transcript-border">
-                <div className="transcript">
+            <div className="transcript-border mb-2 mt-5">
+                <div className="transcript ">
                     <p key={latestMessage} className={cn("transition-opacity duration-500 opacity-0", "animate-fadeIn opacity-100")}>
                         {latestMessage}
                     </p>
@@ -261,7 +261,7 @@ Be conversational and friendly. Once you have all the information, thank them an
 
         <div className="w-full flex justify-center">
             {callStatus !== "ACTIVE" ? (
-                <button className="relative btn-call" onClick={handleCall}>
+                <button className="relative btn-call mt-5" onClick={handleCall}>
                     <span className={cn('absolute animate-ping rounded-full opacity-75', callStatus !== "CONNECTING" && "hidden")}/>
                     
                     <span>
