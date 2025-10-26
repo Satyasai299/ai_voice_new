@@ -26,6 +26,7 @@ const Agent = ({ userName, userId, type, interviewId, feedbackId, questions }: A
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [callStatus, setCallStatus] = useState<CallStatus>(CallStatus.INACTIVE);
   const [messages, setMessages] = useState<SavedMessage[]>([]);
+  const [hasProcessed, setHasProcessed] = useState(false);
 
   const handleGenerateFeedback = async (messages: SavedMessage[]) => {
     console.log("Generate feedback here - messages:", messages);
@@ -147,11 +148,11 @@ const Agent = ({ userName, userId, type, interviewId, feedbackId, questions }: A
   }, [])  
 
   useEffect(() => {
-    console.log("useEffect triggered - callStatus:", callStatus, "type:", type, "messages count:", messages.length);
-    console.log("Messages content:", messages);
+    console.log("useEffect triggered - callStatus:", callStatus, "type:", type, "messages count:", messages.length, "hasProcessed:", hasProcessed);
 
-    if(callStatus === CallStatus.FINISHED){
-        console.log("Call finished, checking type:", type);
+    if(callStatus === CallStatus.FINISHED && !hasProcessed && messages.length > 0){
+        console.log("Call finished, processing...");
+        setHasProcessed(true);
         if(type === "generate"){
             console.log("Type is generate, processing interview generation");
             handleInterviewGeneration(messages);
@@ -161,11 +162,13 @@ const Agent = ({ userName, userId, type, interviewId, feedbackId, questions }: A
         }
     }
 
-  }, [messages, callStatus, feedbackId, interviewId, router, type, userId])
+  }, [callStatus, hasProcessed, messages.length, type, feedbackId, interviewId, router, userId])
 
   const handleCall = async () => {
     console.log("Starting call - type:", type, "userId:", userId, "interviewId:", interviewId);
     console.log("Questions received:", questions);
+    setHasProcessed(false);
+    setMessages([]);
     setCallStatus(CallStatus.CONNECTING);
 
     if (type === "generate") {
@@ -205,21 +208,11 @@ Be conversational and friendly. Once you have all the information, thank them an
   const handleDisconnect = async () => {
     console.log("Manual disconnect triggered");
     console.log("Current messages before disconnect:", messages);
-    setCallStatus(CallStatus.FINISHED);
     vapi.stop();
-    
-    // Add a small delay to ensure messages are processed
+    // Give vapi a moment to trigger call-end event
     setTimeout(() => {
-      console.log("Timeout check - messages after disconnect:", messages);
-      // Fallback: if useEffect didn't trigger the appropriate action, do it manually
-      if (type === "interview" && messages.length > 0) {
-        console.log("Fallback: Manually triggering feedback generation");
-        handleGenerateFeedback(messages);
-      } else if (type === "generate" && messages.length > 0) {
-        console.log("Fallback: Manually triggering interview generation");
-        handleInterviewGeneration(messages);
-      }
-    }, 2000);
+      setCallStatus(CallStatus.FINISHED);
+    }, 100);
   }
 
   const latestMessage = messages[messages.length - 1]?.content;
